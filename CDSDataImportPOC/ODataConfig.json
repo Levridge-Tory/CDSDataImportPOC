@@ -1,0 +1,33 @@
+﻿{
+    "DynamicsAX": {
+        "UriString": "https://usnconeboxax1aos.cloud.onebox.dynamics.com/",
+        "ActiveDirectoryResource": "https://usnconeboxax1aos.cloud.onebox.dynamics.com",
+        "ActiveDirectoryTenant": "https://login.microsoftonline.com/2e14a5b1-fbf8-415b-bc7d-93e20829e510",
+        "ActiveDirectoryClientAppId": "682367d4-26a4-429c-b297-95c577531dc5",
+        "ActiveDirectoryClientAppSecret": "H0ep0JEp9TZrq2iwVQmNCZ0GvvElh8beOP0RWScrqDs=",
+        "ODataEntityPath": "https://usnconeboxax1aos.cloud.onebox.dynamics.com/data/"
+    },
+    "DynamicsCRM": {
+        "UriString": "https://localhost",
+        "ActiveDirectoryResource": "https://levdevag.crm.dynamics.com",
+        "ActiveDirectoryTenant": "https://login.microsoftonline.com/2e14a5b1-fbf8-415b-bc7d-93e20829e510",
+        "ActiveDirectoryClientAppId": "825b2fb7-48ea-4458-8d80-6e48560448f5",
+        "ActiveDirectoryClientAppSecret": "bEZIcYkcNLcm48rb4IqEEGcFtFrbPRUPGDXbwZu9obA=",
+        "ODataEntityPath": "https://levdevag.crm.dynamics.com/api/data/v9.1/",
+        "AssemblyName": "Levridge.ODataDataSources.DynamicsCRM",
+        "AssemblyFile": "Levridge.ODataDataSources.DynamicsCRM.dll",
+        "ClientClassesNameSpace": "Levridge.ODataDataSources.DynamicsCRM",
+        "MetadataResource": "CRMMetadata.xml"
+    },
+    "crm280130": {
+        "UriString": "https://localhost",
+        "ActiveDirectoryResource": "https://crm280130.crm.dynamics.com",
+        "ActiveDirectoryTenant": "https://login.microsoftonline.com/585c93e4-7b51-4483-a4ca-fd52e33b02e5",
+        "ActiveDirectoryClientAppId": "7a171568-e18a-4cb1-8fb1-2d8f484271a4",
+        "ActiveDirectoryClientAppSecret": "WhjKHhECWrX5oPIq]::n4etpg4_8N7+=",
+        "ODataEntityPath": "https://crm280130.crm.dynamics.com/api/data/v9.0/",
+        "AssemblyName": "Levridge.ODataDataSources.DynamicsCRM",
+        "ClientClassesNameSpace": "Levridge.ODataDataSources.DynamicsCRM",
+        "MetadataResource": "CRMMetadata.xml"
+    }
+}

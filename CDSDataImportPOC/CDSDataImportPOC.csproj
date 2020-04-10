@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="ODataConfig.json" />
+    <None Remove="Terms of payment.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ODataConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Terms of payment.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Levridge.DynamicsAxDataSource" Version="1.1.4.10" />
+    <PackageReference Include="Levridge.ODataDataSources.CRMODataDataSource" Version="2.1.15" />
+    <PackageReference Include="Levridge.ODataDataSources.DynamicsCRM" Version="1.0.23" />
+    <PackageReference Include="Simple.OData.Client" Version="5.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Program.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+</Project>
