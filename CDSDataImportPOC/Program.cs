@@ -21,6 +21,46 @@ namespace CDSDataImportPOC
 
     class Program
     {
+        enum ImportEntityMappingDedupe
+        {
+            Ignore = 1,
+            Eliminate = 2
+        }
+
+        enum ImportEntityMappingComponentState
+        {
+            Published = 0,
+            Unpublished = 1,
+            Deleted = 2,
+            DeletedUnpublished = 3
+        }
+
+        enum ImportStatus
+        {
+            Submitted = 0,
+            Parsing = 1,
+            Transforming = 2,
+            Importing = 3,
+            Completed = 4,
+            Failed = 5
+        }
+
+        enum ImportFileProcessStatus
+        {
+            NotStarted = 1,
+            Parsing = 2,
+            ParsingComplete = 3,
+            ComplexTransformation = 4,
+            LookupTransformation = 5,
+            PicklistTransformation = 6,
+            OwnerTransformation = 7,
+            TransformationComplete = 8,
+            ImportPass_1 = 9,
+            ImportPass_2 = 10,
+            ImportComplete = 11,
+            PrimaryKeyTransformation = 12
+        }
+
         enum ImportEntitiesPerFile
         {
             Single = 1,
@@ -90,19 +130,16 @@ namespace CDSDataImportPOC
         {
             Console.WriteLine("Create Payment Terms map");
 
+            // importmap
             var importMap = new importmap()
             {
-                name = "PaymentTerm->lev_paymentterm",
-                source = "Terms of payment.xlsx",
+                name = $"PaymentTerm->lev_paymentterm{DateTime.Now}",
+                source = "Terms of payment",
                 description = "FinOps PaymentTerm to CDS lev_paymentterm",
                 entitiesperfile = (Int32)ImportEntitiesPerFile.Single,
-                isvalidforimport = true
-                //importmapid = Guid.NewGuid(),
-                //importmaptype = (Int32) ImportMapType.Standard,
-                //iswizardcreated = false,
-                //sourcetype = (Int32)ImportSourceType.GenericContactAndAccount
+                isvalidforimport = true,
+                importmaptype = (Int32) ImportMapType.Standard
             };
-            // create to get GUID on importMap
 
             var entity = Program.CreateEntity<importmap>(importMap,
                 new EntityFieldDefinition()
@@ -116,34 +153,71 @@ namespace CDSDataImportPOC
                 });
 
             var ds = await Program.CreateDataSourceAsync(entity).ConfigureAwait(false);
-            entity =  await Program.ReadOrCreateEntity(ds, entity);
+            entity = await Program.CreateEntityAsync(ds, entity);
+            // entity =  await Program.ReadOrCreateEntityAsync(ds, entity);
             importMap = entity.GetEntityAsDotNetType<importmap>();
 
+            // column mappings
             entity = await CreateColumnMappingEntity(ds, importMap,
-                nameof(PaymentTerm),
-                nameof(PaymentTerm.Description),
+                "Terms of payment",
+                "DESCRIPTION",
                 nameof(lev_paymentterm),
                 nameof(lev_paymentterm.lev_description));
 
             entity = await CreateColumnMappingEntity(ds, importMap,
-                nameof(PaymentTerm),
-                nameof(PaymentTerm.Name),
+                "Terms of payment",
+                "NAME",
                 nameof(lev_paymentterm),
                 nameof(lev_paymentterm.lev_name));
 
-            entity = await CreateColumnMappingEntity(ds, importMap,
-                nameof(PaymentTerm),
-                nameof(PaymentTerm.Name),
-                nameof(lev_paymentterm),
-                nameof(lev_paymentterm.lev_paymenttermcode));
+            //entity = await CreateColumnMappingEntity(ds, importMap,
+            //    "Terms of Payment",
+            //    "NAME",
+            //    nameof(lev_paymentterm),
+            //    nameof(lev_paymentterm.lev_paymenttermcode));
+
+            // importentitymapping
+            var importEntityMapping = new importentitymapping()
+            {
+                targetentityname = "lev_paymentterm",
+                sourceentityname = "Terms of payment",
+                importmapid = importMap,
+                componentstate = (Int32)ImportEntityMappingComponentState.Published,
+                processcode = (Int32)ProcessCode.Process,
+                dedupe = (Int32)ImportEntityMappingDedupe.Eliminate
+            };
+            entity = Program.CreateEntity<importentitymapping>(importEntityMapping,
+            new EntityFieldDefinition()
+            {
+                DotNetType = typeof(importentitymapping),
+                NameFieldName = nameof(importentitymapping.targetentityname),
+                IdFieldName = nameof(importentitymapping.importentitymappingid),
+                SyncIdFieldName = nameof(importentitymapping.importentitymappingid),
+                CreatedVersionFieldName = nameof(importentitymapping.createdon),
+                ModifiedVersionFieldName = nameof(importentitymapping.modifiedon)
+            });
+            ds.Entity = entity;
+            entity = await Program.CreateEntityAsync(ds, entity);
+            importEntityMapping = entity.GetEntityAsDotNetType<importentitymapping>();
+
 
             var importEntity = new import()
             {
                 name = "lev_paymentterm import",
                 emailaddress = "tory@levridge.com",
                 sendnotification = true,
-                modecode = (Int32)ImportModeCode.Create
+                modecode = (Int32)ImportModeCode.Create,
+                statuscode = (Int32)ImportStatus.Submitted
             };
+
+            var keys = new List<IEnumerable<String>>();
+            keys.Add(new List<String>()
+            {
+                nameof(import.name),
+                nameof(import.modecode),
+                nameof(import.statuscode)
+            });
+
 
             entity = Program.CreateEntity<import>(importEntity,
             new EntityFieldDefinition()
@@ -151,12 +225,12 @@ namespace CDSDataImportPOC
                 DotNetType = typeof(import),
                 NameFieldName = nameof(importEntity.name),
                 IdFieldName = nameof(importEntity.importid),
-                SyncIdFieldName = nameof(importEntity.name),
+                SyncIdFieldName = nameof(importEntity.importid),
                 CreatedVersionFieldName = nameof(importEntity.createdon),
                 ModifiedVersionFieldName = nameof(importEntity.modifiedon)
-            });
+            }, keys);
             ds.Entity = entity;
-            entity = await Program.ReadOrCreateEntity(ds, entity);
+            entity = await Program.CreateEntityAsync(ds, entity);
             importEntity = entity.GetEntityAsDotNetType<import>();
 
             var importSourceFile = new importfile()
@@ -175,10 +249,20 @@ namespace CDSDataImportPOC
                 targetentityname = nameof(lev_paymentterm),
                 importid = importEntity,
                 importmapid = importMap,
-                usesystemmap = false
+                usesystemmap = false,
+                processingstatus = (Int32)ImportFileProcessStatus.NotStarted
             };
             importSourceFile.content = await ReadCsvFileAsync(
                 Path.Combine(Directory.GetCurrentDirectory(), importSourceFile.source)).ConfigureAwait(false);
+
+            keys.Clear();
+            keys.Add(new List<String>() 
+            { 
+                nameof(importfile.source), 
+                nameof(importfile.sourceentityname), 
+                nameof(importfile.targetentityname),
+                nameof(importfile.processingstatus)
+            });
 
             entity = Program.CreateEntity<importfile>(importSourceFile,
             new EntityFieldDefinition()
@@ -186,34 +270,43 @@ namespace CDSDataImportPOC
                 DotNetType = typeof(importfile),
                 NameFieldName = nameof(importfile.name),
                 IdFieldName = nameof(importfile.importfileid),
-                SyncIdFieldName = nameof(importfile.importfileid),
+                SyncIdFieldName = nameof(importfile.entitykeyid),
                 CreatedVersionFieldName = nameof(importfile.createdon),
                 ModifiedVersionFieldName = nameof(importfile.modifiedon)
-            });
+            }, keys);
             ds.Entity = entity;
-            entity = await Program.ReadOrCreateEntity(ds, entity);
+            entity = await Program.CreateEntityAsync(ds, entity);
 
             // entity = await ds.CreateEntityAsync(entity).ConfigureAwait(false);
             Console.WriteLine("Created Import Job.");
             Console.WriteLine("Begin Parsing ...");
 
             // Create client
-            Uri uri = new Uri(Configuration.GetConnectionString("ODataEntityPath"), UriKind.Absolute);
-            String connectionString = uri.ToString();
+            var odataConfiguration = new ODataClientConfiguration(Program.Configuration);
+            String connectionString = odataConfiguration.ODataEntityPath;
+
+            // Program.Configuration.GetSection("DynamicsCRM").GetConnectionString("ODataEntityPath");
+            Uri uri = new Uri(connectionString, UriKind.Absolute);
+            connectionString = uri.ToString();
 
             var clientSettings = new ODataClientSettings(uri)
             {
                 IncludeAnnotationsInResults = true,
                 BeforeRequest = Program.BeforeRequest,
+                AfterResponseAsync = Program.AfterResponseAsync,
                 IgnoreUnmappedProperties = true,
             };
 
+            // <Action Name = "ParseImport" IsBound = "true">
+            // <Parameter Name = "entity" Type = "mscrm.import" Nullable = "false" />
+            // <ReturnType Type = "mscrm.asyncoperation" Nullable = "false" />
+            // </Action>
+            
             var client = new ODataClient(clientSettings);
-            await client.For<import>()
+            var importClient = client.For<import>()
                 .Key(importEntity.importid)
-                .Action("ParseImport")
-                .Set(importEntity)
-                .ExecuteAsSingleAsync();
+                .Action("ParseImport");
+            var importResult = await importClient.ExecuteAsSingleAsync();
             
 
             Console.WriteLine("completed processing.");
@@ -277,6 +370,22 @@ namespace CDSDataImportPOC
             Console.WriteLine($"request content being sent:\n{request.Content}:");
         }
 
+        private static async Task AfterResponseAsync(HttpResponseMessage response)
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            // TODO: Are there scenarios where we need to handle different types
+            if ((null != response?.Content))
+            {
+                String content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"response recieved. Status: {response?.StatusCode}:");
+                Console.WriteLine($"response content recieved:\n{content}:");
+            }
+        }
+
         private static async Task<Entity> CreateColumnMappingEntity(CRMSimpleODataDataSource ds,
         importmap importMap, 
         String sourceEntityName,
@@ -284,14 +393,14 @@ namespace CDSDataImportPOC
         String targetEntityName,
         String targetAttributeName)
         {
-            var importMapDescriptionMapping = importMap.ColumnMapping_ImportMap.Where(cm =>
+            var importMapDescriptionMapping = importMap.ColumnMapping_ImportMap?.Where(cm =>
                 cm.sourceentityname == sourceEntityName &&
                 cm.sourceattributename == sourceAttributeName &&
                 cm.targetentityname == targetEntityName &&
                 cm.targetattributename == targetAttributeName);
 
             // either get the existing column mapping or create a new column mapping
-            Boolean columnMappingExists = importMap.ColumnMapping_ImportMap.Count > 0 &&
+            Boolean columnMappingExists = importMap.ColumnMapping_ImportMap?.Count > 0 &&
                 importMapDescriptionMapping.Count() > 0;
 
             var columnMapping = columnMappingExists ? importMapDescriptionMapping.First() :
@@ -319,13 +428,14 @@ namespace CDSDataImportPOC
             if(columnMappingExists == false)
             {
                 ds.Entity = entity;
-                entity = await Program.ReadOrCreateEntity(ds, entity);
+                // entity = await Program.ReadOrCreateEntityAsync(ds, entity);
+                entity = await Program.CreateEntityAsync(ds, entity);
             }
 
             return entity;
         }
 
-        private static async Task<Entity> ReadOrCreateEntity(CRMSimpleODataDataSource ds, Entity entity)
+        private static async Task<Entity> ReadOrCreateEntityAsync(CRMSimpleODataDataSource ds, Entity entity)
         {
             try
             {
@@ -335,9 +445,10 @@ namespace CDSDataImportPOC
                     readEntity = ds.ReadEntity(entity);
                 }
                 else if(entity.Keys.Count() > 1 && 
-                    entity.Keys.ElementAt(1).KeyValues.All(v => null != v.Value && !Program.ValueIsDefault(v.Value)))
+                    entity.Keys.First(k => k.KeyName.Contains("PK") == false)
+                    .KeyValues.All(v => null != v.Value && !Program.ValueIsDefault(v.Value)))
                 {
-                    readEntity = ds.ReadEntityByKey(entity, entity.Keys.ElementAt(1).KeyName);
+                    readEntity = ds.ReadEntityByKey(entity, entity.Keys.First(k => k.KeyName.Contains("PK") == false).KeyName);
                 }
                 if (null != readEntity)
                 {
@@ -345,7 +456,7 @@ namespace CDSDataImportPOC
                 }
                 else
                 {
-                    entity = await ds.CreateEntityAsync(entity).ConfigureAwait(false);
+                    entity = await CreateEntityAsync(ds, entity);
                 }
                 return entity;
             }
@@ -355,6 +466,12 @@ namespace CDSDataImportPOC
                 Console.WriteLine($"Message: {ex.Message}");
                 throw;
             }            
+        }
+
+        private static async Task<Entity> CreateEntityAsync(CRMSimpleODataDataSource ds, Entity entity)
+        {
+            entity = await ds.CreateEntityAsync(entity).ConfigureAwait(false);
+            return entity;
         }
 
         private static Boolean ValueIsDefault<T>(T value)
