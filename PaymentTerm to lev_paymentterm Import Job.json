@@ -1,0 +1,75 @@
+{
+  //  "name": null,
+  //  "description": null,
+  //  "sourceDataSource": null,
+  //  "sourceEntityName": null,
+  //  "sourceFile": 
+  //  {
+  //    "name": null,
+  //    "description": null,
+  //    "fileType": null,
+  //    "firstRowIsHeader": false,
+  //    "dataDelimiter": "\u0000",
+  //    "fieldDelimiter": "\u0000"
+  //  },
+  //  "sourceFileLocation": null,
+  //  "targetDataSource": null,
+  //  "targetEntityName": null,
+  //  "entityMap": 
+  //  {
+  //    "sourceEntity": null,
+  //    "targetEntity": null,
+  //    "attributeMaps": 
+  //    {
+  //      "sourceAttribute": null,
+  //      "sourceAttributeRequired": false,
+  //      "targetAttribute": null,
+  //      "defaultTargetAttributeValue": null,
+  //      "transformations": null
+  //    }
+  //  }
+
+  "name": "PaymentTerm to lev_paymentterm",
+  "description": "FinOps PaymentTerm to CDS lev_paymentterm",
+  "NotificationEmail": "tory@levridge.com",
+  "sourceDataSource": "D365FinOps",
+  "sourceEntityName": "PaymentTerm",
+  "sourceFile": {
+    "name": "Terms of payment.csv",
+    "description": "FinOps PaymentTerm to CDS lev_paymentterm",
+    "fileType": "csv",
+    "firstRowIsHeader": false,
+    "dataDelimiter": ",",
+    "fieldDelimiter": null
+  },
+  "sourceFileLocation": "[CurrentDirectory]",
+  "targetDataSource": "CDS",
+  "targetEntityName": "lev_paymentterm",
+  "entityMap": {
+    "sourceEntity": "PaymentTerm",
+    "targetEntity": "lev_paymentterm",
+    "attributeMaps": [
+      {
+        "sourceAttribute": "NAME",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_name",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "sourceAttribute": "NAME",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_paymenttermcode",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "sourceAttribute": "DESCRIPTION",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_description",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      }
+    ]
+  }
+}

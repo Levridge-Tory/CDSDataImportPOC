@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,12 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ODataConfig.json" />
+    <None Remove="appsettings.json" />
     <None Remove="Terms of payment.csv" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="ODataConfig.json">
+    <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Terms of payment.csv">
@@ -23,6 +23,8 @@
     <PackageReference Include="Levridge.DynamicsAxDataSource" Version="1.1.4.10" />
     <PackageReference Include="Levridge.ODataDataSources.CRMODataDataSource" Version="2.1.15" />
     <PackageReference Include="Levridge.ODataDataSources.DynamicsCRM" Version="1.0.23" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.3" />
     <PackageReference Include="Simple.OData.Client" Version="5.12.0" />
   </ItemGroup>
 
