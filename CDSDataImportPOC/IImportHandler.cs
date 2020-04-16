@@ -14,9 +14,13 @@ namespace CDSDataImportPOC
         public Task<importfile> CreateImportFileAsync(String fileName, String path, Boolean firstRowHeader, ImportDataDelimiter dataDelimiter,
             ImportFieldDelimiter fieldDelimiter,
             ImportFileType fileType, Boolean enableDuplicateDetection, UpsertModeCode upsertMode);
-        public Task<Entity> CreateColumnMappingEntityAsync(
+        public Task<columnmapping> CreateColumnMappingEntityAsync(
             String sourceAttributeName,
             String targetAttributeName);
-
+        public Task<lookupmapping> CreateLookupMappingEntityAsync(
+                    String sourceAttributeName,
+                    String targetAttributeName,
+                    string lookupEntity,
+                    string lookupAttribute);
     }
 }

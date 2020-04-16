@@ -18,7 +18,7 @@ namespace CDSDataImportPOC
             set;
         }
 
-        public String FileType
+        public ImportFileType FileType
         {
             get;
             set;
@@ -30,13 +30,13 @@ namespace CDSDataImportPOC
             set;
         }
 
-        public Char DataDelimiter
+        public ImportDataDelimiter DataDelimiter
         {
             get;
             set;
         }
 
-        public Char FieldDelimiter
+        public ImportFieldDelimiter FieldDelimiter
         {
             get;
             set;

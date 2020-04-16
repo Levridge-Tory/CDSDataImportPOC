@@ -1,34 +1,4 @@
 {
-  //  "name": null,
-  //  "description": null,
-  //  "sourceDataSource": null,
-  //  "sourceEntityName": null,
-  //  "sourceFile": 
-  //  {
-  //    "name": null,
-  //    "description": null,
-  //    "fileType": null,
-  //    "firstRowIsHeader": false,
-  //    "dataDelimiter": "\u0000",
-  //    "fieldDelimiter": "\u0000"
-  //  },
-  //  "sourceFileLocation": null,
-  //  "targetDataSource": null,
-  //  "targetEntityName": null,
-  //  "entityMap": 
-  //  {
-  //    "sourceEntity": null,
-  //    "targetEntity": null,
-  //    "attributeMaps": 
-  //    {
-  //      "sourceAttribute": null,
-  //      "sourceAttributeRequired": false,
-  //      "targetAttribute": null,
-  //      "defaultTargetAttributeValue": null,
-  //      "transformations": null
-  //    }
-  //  }
-
   "name": "PaymentTerm to lev_paymentterm",
   "description": "FinOps PaymentTerm to CDS lev_paymentterm",
   "NotificationEmail": "tory@levridge.com",
@@ -37,10 +7,10 @@
   "sourceFile": {
     "name": "Terms of payment.csv",
     "description": "FinOps PaymentTerm to CDS lev_paymentterm",
-    "fileType": "csv",
-    "firstRowIsHeader": false,
-    "dataDelimiter": ",",
-    "fieldDelimiter": null
+    "fileType": "CSV",
+    "firstRowIsHeader": true,
+    "dataDelimiter": "None",
+    "fieldDelimiter": "Comma"
   },
   "sourceFileLocation": "[CurrentDirectory]",
   "targetDataSource": "CDS",
@@ -50,6 +20,7 @@
     "targetEntity": "lev_paymentterm",
     "attributeMaps": [
       {
+        "MapType": "Column",
         "sourceAttribute": "NAME",
         "sourceAttributeRequired": true,
         "targetAttribute": "lev_name",
@@ -57,6 +28,7 @@
         "transformations": null
       },
       {
+        "MapType": "Column",
         "sourceAttribute": "NAME",
         "sourceAttributeRequired": true,
         "targetAttribute": "lev_paymenttermcode",
@@ -64,12 +36,14 @@
         "transformations": null
       },
       {
+        "MapType": "Column",
         "sourceAttribute": "DESCRIPTION",
-        "sourceAttributeRequired": true,
+        "sourceAttributeRequired": false,
         "targetAttribute": "lev_description",
         "defaultTargetAttributeValue": null,
         "transformations": null
       }
     ]
-  }
+  },
+  "ImportMode": "Create"
 }

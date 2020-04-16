@@ -1,9 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CDSDataImportPOC
 {
+    public class LevridgeEnumConverter<T> : JsonConverter<T> where T : struct
+    {
+        public override T Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
+        {
+            String jsonString = reader.GetString();
+            var result = System.Enum.Parse<T>(jsonString);
+            return result;
+        }
+
+        public override void Write(
+            Utf8JsonWriter writer,
+            T enumValue,
+            JsonSerializerOptions options) =>
+                writer.WriteStringValue(enumValue.ToString());
+    }
+
+    public enum LookupSourceCode
+    {
+        Source = 0,
+        System =1
+    }
+    public enum MapType
+    {
+        Column = 0,
+        ListValue = 1,
+        Lookup = 2
+    }
+
     [System.Runtime.Serialization.DataContractAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("CrmSvcUtil", "8.1.0.239")]
     public enum AsyncOperationStatusCode

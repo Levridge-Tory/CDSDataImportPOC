@@ -1,0 +1,94 @@
+{
+  "name": "CustomerSite to lev_customersite",
+  "description": "FinOps CustomerSite to CDS lev_customersite",
+  "NotificationEmail": "tory@levridge.com",
+  "sourceDataSource": "D365FinOps",
+  "sourceEntityName": "CustomerSite",
+  "sourceFile": {
+    "name": "CustomerSitesTory.csv",
+    "description": "FinOps CustomerSite to CDS lev_customersite",
+    "fileType": "CSV",
+    "firstRowIsHeader": true,
+    "dataDelimiter": "None",
+    "fieldDelimiter": "Comma"
+  },
+  "sourceFileLocation": "[CurrentDirectory]",
+  "targetDataSource": "CDS",
+  "targetEntityName": "lev_customersite",
+  "entityMap": {
+    "sourceEntity": "CustomerSite",
+    "targetEntity": "lev_customersite",
+    "attributeMaps": [
+      {
+        "mapType": "Column",
+        "sourceAttribute": "COUNTRYREGIONID",
+        "sourceAttributeRequired": false,
+        "targetAttribute": "lev_country",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "mapType": "Column",
+        "sourceAttribute": "COUNTY",
+        "sourceAttributeRequired": false,
+        "targetAttribute": "lev_county",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "mapType": "Lookup",
+        "sourceAttribute": "CUSTOMEROPERATIONCODE",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_customeroperationid",
+        "defaultTargetAttributeValue": null,
+        "transformations": null,
+        "LookupEntity": "lev_customeroperation",
+        "LookupAttribute": "lev_customeroperationcode"
+      },
+      {
+        "mapType": "Column",
+        "sourceAttribute": "CUSTOMERSITECODE",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_customersitecode",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "mapType": "Lookup",
+        "sourceAttribute": "CUSTOMERSITETYPESYNCCODE",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_customersitetypeid",
+        "defaultTargetAttributeValue": null,
+        "transformations": null,
+        "LookupEntity": "lev_customersitetype",
+        "LookupAttribute": "lev_customersitetypecode"
+      },
+      {
+        "mapType": "Column",
+        "sourceAttribute": "DESCRIPTION",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_description",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "mapType": "Column",
+        "sourceAttribute": "NAME",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_name",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      },
+      {
+        "mapType": "Column",
+        "sourceAttribute": "PARTYNUMBER",
+        "sourceAttributeRequired": true,
+        "targetAttribute": "lev_partynumber",
+        "defaultTargetAttributeValue": null,
+        "transformations": null
+      }
+      
+    ]
+  },
+  "ImportMode": "Create"
+}

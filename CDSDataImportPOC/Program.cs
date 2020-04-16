@@ -53,25 +53,49 @@ namespace CDSDataImportPOC
                     {
                         var options = new JsonSerializerOptions
                         {
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                            PropertyNameCaseInsensitive = true
                         };
                         options.Converters.Add(new JsonStringEnumConverter());
+                        
+                        //options.Converters.Add(new LevridgeEnumConverter<MapType>());
+                        //options.Converters.Add(new LevridgeEnumConverter<ImportModeCode>());
+                        //options.Converters.Add(new LevridgeEnumConverter<ImportFileType>());
+                        //options.Converters.Add(new LevridgeEnumConverter<ImportDataDelimiter>());
+                        //options.Converters.Add(new LevridgeEnumConverter<ImportFieldDelimiter>());
                         integrationJob = await JsonSerializer.DeserializeAsync<IntegrationJob>(fs, options);
                     }
                     // importmap
-                    ImportHandlerService importHandler = new ImportHandlerService($"PaymentTerm->lev_paymentterm{DateTime.Now}",
-                        "FinOps PaymentTerm to CDS lev_paymentterm",
-                        "Terms of payment",
-                        nameof(lev_paymentterm),
+                    ImportHandlerService importHandler = new ImportHandlerService(integrationJob.Name,
+                        integrationJob.Description,
+                        integrationJob.SourceEntityName,
+                        integrationJob.TargetEntityName,
                         ImportEntitiesPerFile.Single);
 
                     importmap importmap = await importHandler.CreateImportMapAsync();
-
                     // column mappings
-                    await importHandler.CreateColumnMappingEntityAsync("NAME", nameof(lev_paymentterm.lev_name)).ConfigureAwait(false);
-                    await importHandler.CreateColumnMappingEntityAsync("DESCRIPTION", nameof(lev_paymentterm.lev_description)).ConfigureAwait(false);
-                    await importHandler.CreateColumnMappingEntityAsync("NAME", nameof(lev_paymentterm.lev_paymenttermcode)).ConfigureAwait(false);
+                    foreach (var attributeMap in integrationJob.EntityMap.AttributeMaps)
+                    {
+                        switch(attributeMap.MapType)
+                        {
+                            case MapType.Column:
+                                await importHandler.CreateColumnMappingEntityAsync(attributeMap.SourceAttribute, attributeMap.TargetAttribute).ConfigureAwait(false);
+                                break;
+                            case MapType.ListValue:
+                                break;
+                            case MapType.Lookup:
+                                await importHandler.CreateLookupMappingEntityAsync(
+                                    attributeMap.SourceAttribute, 
+                                    attributeMap.TargetAttribute,
+                                    attributeMap.LookupEntity,
+                                    attributeMap.LookupAttribute).ConfigureAwait(false);
+                                break;
 
+                        }
+                    }
+
+                    //await importHandler.CreateColumnMappingEntityAsync("DESCRIPTION", nameof(lev_paymentterm.lev_description)).ConfigureAwait(false);
+                    //await importHandler.CreateColumnMappingEntityAsync("NAME", nameof(lev_paymentterm.lev_paymenttermcode)).ConfigureAwait(false);
                     // importentitymapping
                     //var importEntityMapping = new importentitymapping()
                     //{
@@ -96,17 +120,21 @@ namespace CDSDataImportPOC
                     //entity = await Program.CreateEntityAsync(ds, entity);
                     //importEntityMapping = entity.GetEntityAsDotNetType<importentitymapping>();
 
-                    var importEntity = await importHandler.CreateImportAsync("tory@levridge.com",
-                        ImportModeCode.Create, true);
+                    var importEntity = await importHandler.CreateImportAsync(integrationJob.NotificationEmail,
+                        integrationJob.ImportMode, String.IsNullOrEmpty(integrationJob.NotificationEmail) == false);
 
-                    var importMap = await importHandler.CreateImportFileAsync(fileName: "Terms of payment.csv",
-                        path: Directory.GetCurrentDirectory(),
-                        firstRowHeader: true,
-                        dataDelimiter: ImportDataDelimiter.None,
-                        fieldDelimiter: ImportFieldDelimiter.Comma,
-                        fileType: ImportFileType.CSV,
+                    var path = integrationJob.SourceFileLocation.Trim().StartsWith('[') &&
+                        integrationJob.SourceFileLocation.Trim().EndsWith(']') ? ProcessCommand(integrationJob.SourceFileLocation)
+                    : integrationJob.SourceFileLocation;
+
+                    var importMap = await importHandler.CreateImportFileAsync(fileName: integrationJob.SourceFile.Name,
+                        path: path,
+                        firstRowHeader: integrationJob.SourceFile.FirstRowIsHeader,
+                        dataDelimiter: integrationJob.SourceFile.DataDelimiter,
+                        fieldDelimiter: integrationJob.SourceFile.FieldDelimiter,
+                        fileType: integrationJob.SourceFile.FileType,
                         enableDuplicateDetection: true,
-                        upsertMode: UpsertModeCode.Create
+                        upsertMode: integrationJob.ImportMode == ImportModeCode.Create ? UpsertModeCode.Create : UpsertModeCode.Update
                         );
 
                     // entity = await ds.CreateEntityAsync(entity).ConfigureAwait(false);
@@ -129,9 +157,8 @@ namespace CDSDataImportPOC
                     await odataClientService.ExecuteUnboundActionAsync(parameters, "TransformImport");
 
                     // validate that transformation was succesful
-                    
-                    updatedImport = await odataClientService.ExecuteBoundActionAsync<import>(importEntity, importEntity.importid.Value, "ImportRecordsImport");
 
+                    updatedImport = await odataClientService.ExecuteBoundActionAsync<import>(importEntity, importEntity.importid.Value, "ImportRecordsImport");
                 }
                 catch (Exception ex)
                 {
@@ -146,47 +173,21 @@ namespace CDSDataImportPOC
             Console.ReadKey();
         }
 
-
-        //private static async Task<Entity> ReadOrCreateEntityAsync(CRMSimpleODataDataSource ds, Entity entity)
-        //{
-        //    try
-        //    {
-        //        Entity readEntity = null;
-        //        if(null != entity.ID || null != entity.SyncID)
-        //        {
-        //            readEntity = ds.ReadEntity(entity);
-        //        }
-        //        else if(entity.Keys.Count() > 1 && 
-        //            entity.Keys.First(k => k.KeyName.Contains("PK") == false)
-        //            .KeyValues.All(v => null != v.Value && !Program.ValueIsDefault(v.Value)))
-        //        {
-        //            readEntity = ds.ReadEntityByKey(entity, entity.Keys.First(k => k.KeyName.Contains("PK") == false).KeyName);
-        //        }
-        //        if (null != readEntity)
-        //        {
-        //            entity = readEntity;
-        //        }
-        //        else
-        //        {
-        //            entity = await CreateEntityAsync(ds, entity);
-        //        }
-        //        return entity;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"{ex.GetType().Name} exception thrown.");
-        //        Console.WriteLine($"Message: {ex.Message}");
-        //        throw;
-        //    }            
-        //}
-
-
-        //private static Boolean ValueIsDefault<T>(T value)
-        //{
-        //    // from https://stackoverflow.com/questions/1895761/test-for-equality-to-the-default-value
-        //    return EqualityComparer<T>.Default.Equals(value, default(T));
-        //}
-
+        private static String ProcessCommand(String location)
+        {
+            var command = location.Trim(new char[]{ '[', ']' });
+            String result;
+            switch (command)
+            {
+                // currently the only command we support
+                case "CurrentDirectory":
+                    result = Directory.GetCurrentDirectory();
+                    break;
+                default:
+                    throw new InvalidDataException($"File location command {command} is not recognized.");
+            }
+            return result;
+        }
 
         public static IConfiguration Configuration
         {

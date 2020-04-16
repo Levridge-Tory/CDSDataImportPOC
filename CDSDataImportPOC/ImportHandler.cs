@@ -115,8 +115,8 @@ namespace CDSDataImportPOC
                     ModifiedVersionFieldName = nameof(importmap.modifiedon)
                 });
 
-            this.ImportMapEntity = await this.CreateEntityAsync(ImportMapEntity);
-            // entity =  await Program.ReadOrCreateEntityAsync(ds, entity);
+            // this.ImportMapEntity = await this.CreateEntityAsync(this.ImportMapEntity);
+            this.ImportMapEntity = await this.ReadOrCreateEntityAsync(this.ImportMapEntity);
 
             this.ImportMap = this.ImportMapEntity.GetEntityAsDotNetType<importmap>();
             return this.ImportMap;
@@ -217,7 +217,7 @@ namespace CDSDataImportPOC
             return ImportFile;
         }
 
-        public async Task<Entity> CreateColumnMappingEntityAsync(
+        public async Task<columnmapping> CreateColumnMappingEntityAsync(
             String sourceAttributeName,
             String targetAttributeName)
         {
@@ -229,7 +229,7 @@ namespace CDSDataImportPOC
 
             // either get the existing column mapping or create a new column mapping
             Boolean columnMappingExists = this.ImportMap.ColumnMapping_ImportMap?.Count > 0 &&
-                importMapDescriptionMapping.Count() > 0;
+                importMapDescriptionMapping?.Count() > 0;
 
             var columnMapping = columnMappingExists ? importMapDescriptionMapping.First() :
                 new columnmapping() // https://docs.microsoft.com/en-us/dynamics365/customer-engagement/web-api/columnmapping?view=dynamics-ce-odata-9
@@ -260,8 +260,55 @@ namespace CDSDataImportPOC
                 entity = await this.CreateEntityAsync(entity);
             }
 
-            return entity;
+            return entity.GetEntityAsDotNetType<columnmapping>();
         }
+
+        public async Task<lookupmapping> CreateLookupMappingEntityAsync(
+            String sourceAttributeName,
+            String targetAttributeName,
+            string lookupEntity,
+            string lookupAttribute)
+        {
+            var columnMapping = await this.CreateColumnMappingEntityAsync(sourceAttributeName, targetAttributeName);
+            var existingLookupMap = columnMapping?.LookUpMapping_ColumnMapping?.Where(lm =>
+            lm.lookupattributename == lookupAttribute &&
+            lm.lookupentityname == lookupEntity);
+            Boolean lookupMappingExists = this.ImportMap.ColumnMapping_ImportMap?.Count > 0 &&
+                existingLookupMap?.Count() > 0;
+
+            var lookupMapping = new lookupmapping() 
+            {
+                lookupentityname = lookupEntity,
+                lookupattributename = lookupAttribute,
+                lookupsourcecode = (Int32)LookupSourceCode.System,
+                processcode = (Int32)ProcessCode.Process,
+                columnmappingid = columnMapping
+            };
+
+            var keys = new List<IEnumerable<String>>();
+            keys.Add(new List<String>() { nameof(lookupmapping.lookupentityname), 
+                nameof(lookupmapping.lookupattributename)
+            });
+            var entity = EntityHelper.CreateEntity<lookupmapping>(lookupMapping,
+                new EntityFieldDefinition()
+                {
+                    DotNetType = typeof(lookupmapping),
+                    NameFieldName = nameof(lookupmapping.lookupattributename),
+                    IdFieldName = nameof(lookupmapping.lookupmappingid),
+                    SyncIdFieldName = nameof(lookupmapping.lookupattributename),
+                    CreatedVersionFieldName = nameof(lookupmapping.createdon),
+                    ModifiedVersionFieldName = nameof(lookupmapping.modifiedon)
+                }, keys);
+            if (lookupMappingExists == false)
+            {
+                this._crmDataSource.Entity = entity;
+                // entity = await Program.ReadOrCreateEntityAsync(ds, entity);
+                entity = await this.CreateEntityAsync(entity);
+            }
+
+            return entity.GetEntityAsDotNetType<lookupmapping>();
+        }
+
 
         private static async Task<string> ReadCsvFileAsync(string filePath)
         {
@@ -295,6 +342,53 @@ namespace CDSDataImportPOC
             return entity;
         }
 
+        private async Task<Entity> ReadOrCreateEntityAsync(Entity entity)
+        {
+            if (entity is null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+            if (this._crmDataSource is null)
+            {
+                this._crmDataSource = await ImportHandlerService.CreateDataSourceAsync(this.ImportMapEntity).ConfigureAwait(false);
+            }
+
+            try
+            {
+                Entity readEntity = null;
+                if (null != entity.ID || null != entity.SyncID)
+                {
+                    readEntity = this._crmDataSource.ReadEntity(entity);
+                }
+                else if (entity.Keys.Count() > 1 &&
+                    entity.Keys.First(k => k.KeyName.Contains("PK") == false)
+                    .KeyValues.All(v => null != v.Value && !ImportHandlerService.ValueIsDefault(v.Value)))
+                {
+                    readEntity = this._crmDataSource.ReadEntityByKey(entity, entity.Keys.First(k => k.KeyName.Contains("PK") == false).KeyName);
+                }
+                if (null != readEntity)
+                {
+                    entity = readEntity;
+                }
+                else
+                {
+                    entity = await this._crmDataSource.CreateEntityAsync(entity).ConfigureAwait(false);
+                }
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.GetType().Name} exception thrown.");
+                Console.WriteLine($"Message: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static Boolean ValueIsDefault<T>(T value)
+        {
+            // from https://stackoverflow.com/questions/1895761/test-for-equality-to-the-default-value
+            return EqualityComparer<T>.Default.Equals(value, default(T));
+        }
 
     }
 }

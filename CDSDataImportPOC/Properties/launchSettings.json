@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CDSDataImportPOC": {
+      "commandName": "Project",
+      "commandLineArgs": "\"CustomerSite to lev_customersite Import Job.json\""
+    }
+  }
+}

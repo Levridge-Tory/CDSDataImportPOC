@@ -67,6 +67,12 @@ namespace CDSDataImportPOC
             get;
             set;
         }
+
+        public ImportModeCode ImportMode
+        {
+            get;
+            set;
+        }
     }
 }
 

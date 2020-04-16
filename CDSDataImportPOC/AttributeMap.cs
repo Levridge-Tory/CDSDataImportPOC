@@ -6,6 +6,11 @@ namespace CDSDataImportPOC
 {
     public class AttributeMap
     {
+        public MapType MapType
+        {
+            get;
+            set;
+        }
         public String SourceAttribute
         {
             get;
@@ -31,6 +36,18 @@ namespace CDSDataImportPOC
         }
 
         public IEnumerable<AttributeTransformation> Transformations
+        {
+            get;
+            set;
+        }
+
+        public String LookupEntity
+        {
+            get;
+            set;
+        }
+
+        public String LookupAttribute
         {
             get;
             set;

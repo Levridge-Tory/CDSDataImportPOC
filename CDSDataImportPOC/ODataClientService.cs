@@ -1,6 +1,7 @@
 ﻿using Levridge.AuthenticationUtility;
 using Levridge.ODataDataSources.DynamicsCRM;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
@@ -28,16 +29,18 @@ namespace CDSDataImportPOC
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private ILogger _logger;
         private OAuthHeaderDelegate _headerDelegate;
 
         private HttpRequestMessage _requestMessage;
         private HttpResponseMessage _responseMessage;
         private String _responseContent;
 
-        public ODataClientService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public ODataClientService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<ODataClientService> logger)
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _headerDelegate = new OAuthHeaderDelegate(ODataClientService.CreateClientConfiguration(configuration));
         }
 
@@ -134,8 +137,8 @@ namespace CDSDataImportPOC
             };
             request.RequestUri = uriBuilder.Uri;
 
-            Console.WriteLine($"request being sent to:\n{request.RequestUri.ToString()}:");
-            Console.WriteLine($"request content being sent:\n{request.Content}:");
+            _logger?.LogInformation($"request being sent to:\n{request.RequestUri.ToString()}:");
+            _logger?.LogInformation($"request content being sent:\n{request.Content}:");
         }
 
         private async Task AfterResponseAsync(HttpResponseMessage response)
@@ -146,8 +149,9 @@ namespace CDSDataImportPOC
             if ((null != response?.Content))
             {
                 _responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"response recieved. Status: {response?.StatusCode}:");
-                Console.WriteLine($"response content recieved:\n{_responseContent}:");
+
+                _logger.LogInformation($"response recieved. Status: {response?.StatusCode}:");
+                _logger.LogInformation($"response content recieved:\n{_responseContent}:");
             }
         }
 
@@ -178,9 +182,9 @@ namespace CDSDataImportPOC
                 asyncJob = await client.For<asyncoperation>()
                 .Key(asyncJob.asyncoperationid)
                 .FindEntryAsync();
-                Console.WriteLine($"Async operation state is { ((AsyncOperationState)asyncJob.statecode.Value).ToString()}");
+                _logger.LogInformation($"Async operation state is { ((AsyncOperationState)asyncJob.statecode.Value).ToString()}");
             }
-            Console.WriteLine($"Async job is { ((AsyncOperationState)asyncJob.statecode.Value).ToString()} with status { ((AsyncOperationStatusCode)asyncJob.statuscode).ToString()}");
+            _logger.LogInformation($"Async job is { ((AsyncOperationState)asyncJob.statecode.Value).ToString()} with status { ((AsyncOperationStatusCode)asyncJob.statuscode).ToString()}");
         }
 
 
