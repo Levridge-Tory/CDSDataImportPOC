@@ -1,7 +1,7 @@
 {
-  "name": "CustomerSite to lev_customersite",
+  "name": "CustomerSite to lev_customersite New",
   "description": "FinOps CustomerSite to CDS lev_customersite",
-  "NotificationEmail": "tory@levridge.com",
+  "notificationEmail": "tory@levridge.com",
   "sourceDataSource": "D365FinOps",
   "sourceEntityName": "CustomerSite",
   "sourceFile": {
@@ -87,8 +87,8 @@
         "defaultTargetAttributeValue": null,
         "transformations": null
       }
-      
+
     ]
   },
-  "ImportMode": "Create"
+  "importMode": "Create"
 }

@@ -7,24 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace CDSDataImportPOC
 {
-    public class LevridgeEnumConverter<T> : JsonConverter<T> where T : struct
-    {
-        public override T Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
-        {
-            String jsonString = reader.GetString();
-            var result = System.Enum.Parse<T>(jsonString);
-            return result;
-        }
-
-        public override void Write(
-            Utf8JsonWriter writer,
-            T enumValue,
-            JsonSerializerOptions options) =>
-                writer.WriteStringValue(enumValue.ToString());
-    }
 
     public enum LookupSourceCode
     {
