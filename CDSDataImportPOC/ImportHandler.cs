@@ -2,6 +2,7 @@
 using Levridge.ODataDataSources.DynamicsCRM;
 using Levridge.EntityFramework;
 using Levridge.ODataDataSources;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -90,6 +91,20 @@ namespace CDSDataImportPOC
         {
             get;
             set;
+        }
+
+        public static IConfiguration Configuration
+        {
+            get;
+        } = ImportHandlerService.LoadConfig();
+
+        private static IConfiguration LoadConfig()
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json");
+
+            return builder.Build();
         }
 
         public async Task<importmap> CreateImportMapAsync()
@@ -321,7 +336,7 @@ namespace CDSDataImportPOC
 
         private static async Task<CRMSimpleODataDataSource> CreateDataSourceAsync(Entity entity)
         {
-            var ds = new CRMSimpleODataDataSource(entity, Program.Configuration);
+            var ds = new CRMSimpleODataDataSource(entity, ImportHandlerService.Configuration);
             await ds.ConnectAsync().ConfigureAwait(false);
             return ds;
         }
