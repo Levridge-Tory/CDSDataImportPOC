@@ -41,7 +41,9 @@ namespace CDSDataImportPOC
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _headerDelegate = new OAuthHeaderDelegate(ODataClientService.CreateClientConfiguration(configuration));
+            var delegateTask = OAuthHeaderDelegate.Create(ODataClientService.CreateClientConfiguration(configuration));
+            delegateTask.Wait();
+            _headerDelegate = delegateTask.Result;
         }
 
         public async Task<T> ExecuteBoundActionAsync<T>(T boundEntity, System.Object boundEntityId, String actionName) where T : class
@@ -111,7 +113,7 @@ namespace CDSDataImportPOC
                 throw new ApplicationException("Header Delegate has not been created.");
             }
 
-            _headerDelegate.AddRequestAuthenticationHeader(request);
+            _headerDelegate.AddRequestAuthenticationHeaderAsync(request).Wait();
 
             // Add preference for annotations
             if (request.Headers.TryGetValues("Prefer", out IEnumerable<String> headerValues) == true)

@@ -278,6 +278,21 @@ namespace CDSDataImportPOC
             return entity.GetEntityAsDotNetType<columnmapping>();
         }
 
+        public async Task<picklistmapping> CreatePickListMappingEntityAsync(
+            String sourceAttributeName,
+            String targetAttributeName)
+        {
+            var columnMapping = await this.CreateColumnMappingEntityAsync(sourceAttributeName, targetAttributeName);
+            var pickListMapping = new picklistmapping()
+            {
+                processcode = (Int32)ProcessCode.Process,
+                columnmappingid = columnMapping
+            };
+
+            return pickListMapping;
+        }
+
+
         public async Task<lookupmapping> CreateLookupMappingEntityAsync(
             String sourceAttributeName,
             String targetAttributeName,

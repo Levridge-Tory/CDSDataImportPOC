@@ -20,9 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Levridge.DynamicsAxDataSource" Version="1.1.4.10" />
-    <PackageReference Include="Levridge.ODataDataSources.CRMODataDataSource" Version="2.1.15" />
-    <PackageReference Include="Levridge.ODataDataSources.DynamicsCRM" Version="1.0.23" />
+    <PackageReference Include="Levridge.ODataDataSources.CRMODataDataSource" Version="1.1.58" />
+    <PackageReference Include="Levridge.ODataDataSources.DynamicsCRM" Version="1.1.58" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.3" />
     <PackageReference Include="Simple.OData.Client" Version="5.12.0" />
@@ -44,7 +43,13 @@
     <None Update="CustomerSitesTory.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Patronage Sales.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="PaymentTerm to lev_paymentterm Import Job.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Sales Transactions to lev_importedtransactions Import Job.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

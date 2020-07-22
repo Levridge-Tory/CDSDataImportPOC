@@ -23,7 +23,7 @@ namespace CDSDataImportPOC
                 Console.WriteLine("You must provide a JSON file name to load.");
                 throw new ArgumentNullException(nameof(args));
             }
-            Console.WriteLine("Create Payment Terms map");
+            Console.WriteLine($"Processing {args[0]}");
 
             var builder = Host.CreateDefaultBuilder(args)
                 // should load appsettings.json by default
@@ -82,6 +82,7 @@ namespace CDSDataImportPOC
                                 await importHandler.CreateColumnMappingEntityAsync(attributeMap.SourceAttribute, attributeMap.TargetAttribute).ConfigureAwait(false);
                                 break;
                             case MapType.ListValue:
+                                await importHandler.CreatePickListMappingEntityAsync(attributeMap.SourceAttribute, attributeMap.TargetAttribute).ConfigureAwait(false);
                                 break;
                             case MapType.Lookup:
                                 await importHandler.CreateLookupMappingEntityAsync(
@@ -138,7 +139,7 @@ namespace CDSDataImportPOC
                         );
 
                     // entity = await ds.CreateEntityAsync(entity).ConfigureAwait(false);
-                    Console.WriteLine("Created Import Job.");
+                    Console.WriteLine($"Created Import Job {integrationJob.Name}.");
                     Console.WriteLine("Begin Parsing ...");
 
                     var odataClientService = services.GetRequiredService<IODataClientService>();
@@ -148,7 +149,7 @@ namespace CDSDataImportPOC
                     // </Action>
                     var updatedImport = await odataClientService.ExecuteBoundActionAsync<import>(importEntity, importEntity.importid.Value, "ParseImport");
 
-                    // validate that we completed succesfully
+                    // validate that we completed successfully
 
                     // Execute transformation
                     var parameters = new Dictionary<String, System.Object>();

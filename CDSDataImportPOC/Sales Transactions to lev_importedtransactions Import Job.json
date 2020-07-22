@@ -1,0 +1,162 @@
+{
+    "name": "Sales Transactions to lev_importedtransactions Import Job",
+    "description": "Sales Transactions to lev_importedtransactions Import Job",
+    "notificationEmail": "jasons@levridge.com",
+    "sourceDataSource": "DynamicsAX",
+    "sourceEntityName": "SalesOrders",
+    "sourceFile": {
+        "name": "Patronage Sales.csv",
+        "description": "Sales Transactions to lev_importedtransactions Import Job",
+        "fileType": "CSV",
+        "firstRowIsHeader": true,
+        "dataDelimiter": "None",
+        "fieldDelimiter": "Comma"
+    },
+    "sourceFileLocation": "[CurrentDirectory]",
+    "targetDataSource": "DynamicsCRM",
+    "targetEntityName": "lev_patronage",
+    "entityMap": {
+        "sourceEntity": "SalesOrders",
+        "targetEntity": "lev_patronage",
+        "attributeMaps": [
+
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Period",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "lev_patronageperiodid",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "lev_patronageperiodcode",
+                "LookupAttribute": "lev_name"
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Source",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "lev_patronagesourceid",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "lev_patronageparameter",
+                "LookupAttribute": "lev_name"
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Invoiced unit",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_unitid",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "uom",
+                "LookupAttribute": "name"
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Patronage unit",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_patronageunit",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "uom",
+                "LookupAttribute": "name"
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Sync code",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "lev_itemid",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "product",
+                "LookupAttribute": "lev_productcode"
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Currency",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "transactioncurrencyid",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "transactioncurrency",
+                "LookupAttribute": "isocurrencycode"
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Invoice",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_invoicenumber",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Invoiced amount",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_netamount",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Invoiced quantity",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_quantity",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Invoice date",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "lev_transactiondate",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Patronage quantity",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_patronagequantity",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Charge code",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_chargecode",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "lev_chargecode",
+                "LookupAttribute": "lev_chargecodecode"
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Charge amount",
+                "sourceAttributeRequired": false,
+                "targetAttribute": "lev_chargeamount",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Column",
+                "sourceAttribute": "Purchase or Sale",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "lev_purchaseorsale",
+                "defaultTargetAttributeValue": null,
+                "transformations": null
+            },
+            {
+                "mapType": "Lookup",
+                "sourceAttribute": "Branch",
+                "sourceAttributeRequired": true,
+                "targetAttribute": "lev_branchid",
+                "defaultTargetAttributeValue": null,
+                "transformations": null,
+                "LookupEntity": "lev_companysite",
+                "LookupAttribute": "lev_companysitecode"
+            }
+        ]
+    },
+    "importMode": "Create"
+}

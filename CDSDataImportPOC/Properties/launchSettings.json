@@ -2,7 +2,7 @@
   "profiles": {
     "CDSDataImportPOC": {
       "commandName": "Project",
-      "commandLineArgs": "\"CustomerSite to lev_customersite Import Job.json\""
+      "commandLineArgs": "\"Sales Transactions to lev_importedtransactions Import Job.json\""
     }
   }
 }
